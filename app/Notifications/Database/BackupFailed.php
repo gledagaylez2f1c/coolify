@@ -4,6 +4,7 @@ namespace App\Notifications\Database;
 
 use App\Models\ScheduledDatabaseBackup;
 use App\Notifications\Channels\DiscordChannel;
+use App\Notifications\Channels\PushoverChannel;
 use App\Notifications\Channels\TelegramChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,7 +30,7 @@ class BackupFailed extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return [DiscordChannel::class, TelegramChannel::class, MailChannel::class];
+        return [DiscordChannel::class, TelegramChannel::class, MailChannel::class, PushoverChannel::class];
     }
 
     public function toMail(): MailMessage
@@ -54,6 +55,13 @@ class BackupFailed extends Notification implements ShouldQueue
         $message = "Coolify:  Database backup for {$this->name} (db:{$this->database_name}) with frequency of {$this->frequency} was FAILED.\n\nReason: {$this->output}";
         return [
             "message" => $message,
+        ];
+    }
+
+    public function toPushover(): array
+    {
+        return [
+            "message" => "Coolify:  Database backup for {$this->name} with frequency of {$this->frequency} was FAILED.\n\nReason: {$this->output}",
         ];
     }
 }
