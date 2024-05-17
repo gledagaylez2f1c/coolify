@@ -2,6 +2,7 @@
 
 namespace App\Notifications\Server;
 
+use App\Actions\Docker\GetContainersStatus;
 use App\Jobs\ContainerStatusJob;
 use App\Models\Server;
 use App\Notifications\Channels\PushoverChannel;
@@ -23,7 +24,8 @@ class Revived extends Notification implements ShouldQueue
         if ($this->server->unreachable_notification_sent === false) {
             return;
         }
-        dispatch(new ContainerStatusJob($server));
+        GetContainersStatus::dispatch($server);
+        // dispatch(new ContainerStatusJob($server));
     }
 
     public function via(object $notifiable): array
