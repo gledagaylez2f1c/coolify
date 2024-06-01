@@ -4,6 +4,7 @@
 
 html,
 body {
+    zoom: 0.95;
     @apply h-full bg-neutral-50 text-neutral-800 dark:bg-base dark:text-neutral-400;
 }
 
@@ -41,7 +42,7 @@ option {
 }
 
 .button {
-    @apply flex items-center justify-center gap-2 px-2 py-1 text-sm text-black normal-case border rounded cursor-pointer bg-neutral-200/50 border-neutral-300 hover:bg-neutral-300 dark:bg-coolgray-200 dark:text-white dark:hover:text-white dark:hover:bg-coolgray-500 dark:border-black hover:text-black disabled:cursor-not-allowed min-w-fit focus:outline-1 dark:disabled:text-neutral-600 disabled:border-none disabled:hover:bg-transparent disabled:bg-transparent disabled:text-neutral-300;
+    @apply flex items-center justify-center gap-2 px-2 py-1 text-sm text-black normal-case border rounded cursor-pointer bg-neutral-200/50 border-neutral-300 hover:bg-neutral-300 dark:bg-coolgray-200 dark:text-white dark:hover:text-white dark:hover:bg-coolgray-500 dark:border-coolgray-300 hover:text-black disabled:cursor-not-allowed min-w-fit focus:outline-1 dark:disabled:text-neutral-600 disabled:border-none disabled:hover:bg-transparent disabled:bg-transparent disabled:text-neutral-300;
 }
 
 button[isError]:not(:disabled) {
