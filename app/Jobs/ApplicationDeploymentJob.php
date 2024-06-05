@@ -113,7 +113,6 @@ class ApplicationDeploymentJob implements ShouldQueue, ShouldBeEncrypted
     public $tries = 1;
     public function __construct(int $application_deployment_queue_id)
     {
-        ray()->clearAll();
         $this->application_deployment_queue = ApplicationDeploymentQueue::find($application_deployment_queue_id);
         $this->application = Application::find($this->application_deployment_queue->application_id);
         $this->build_pack = data_get($this->application, 'build_pack');
@@ -347,9 +346,15 @@ class ApplicationDeploymentJob implements ShouldQueue, ShouldBeEncrypted
         }
         if (data_get($this->application, 'docker_compose_custom_start_command')) {
             $this->docker_compose_custom_start_command = $this->application->docker_compose_custom_start_command;
+            if (!str($this->docker_compose_custom_start_command)->contains('--project-directory')) {
+                $this->docker_compose_custom_start_command = str($this->docker_compose_custom_start_command)->replaceFirst('compose', 'compose --project-directory ' . $this->workdir)->value();
+            }
         }
         if (data_get($this->application, 'docker_compose_custom_build_command')) {
             $this->docker_compose_custom_build_command = $this->application->docker_compose_custom_build_command;
+            if (!str($this->docker_compose_custom_build_command)->contains('--project-directory')) {
+                $this->docker_compose_custom_build_command = str($this->docker_compose_custom_build_command)->replaceFirst('compose', 'compose --project-directory ' . $this->workdir)->value();
+            }
         }
         if ($this->pull_request_id === 0) {
             $this->application_deployment_queue->addLogEntry("Starting deployment of {$this->application->name} to {$this->server->name}.");
@@ -367,7 +372,7 @@ class ApplicationDeploymentJob implements ShouldQueue, ShouldBeEncrypted
             $yaml = $composeFile = $this->application->docker_compose_raw;
             $this->save_environment_variables();
         } else {
-            $composeFile = $this->application->parseCompose(pull_request_id: $this->pull_request_id);
+            $composeFile = $this->application->parseCompose(pull_request_id: $this->pull_request_id, preview_id: data_get($this, 'preview.id'));
             $this->save_environment_variables();
             if (!is_null($this->env_filename)) {
                 $services = collect($composeFile['services']);
@@ -792,7 +797,7 @@ class ApplicationDeploymentJob implements ShouldQueue, ShouldBeEncrypted
                 $url = str($this->application->fqdn)->replace('http://', '')->replace('https://', '');
                 $envs->push("COOLIFY_URL={$url}");
             }
-            if ($this->application->environment_variables_preview->where('key', 'COOLIFY_BRANCH')->isEmpty()) {
+            if ($this->application->environment_variables->where('key', 'COOLIFY_BRANCH')->isEmpty()) {
                 $envs->push("COOLIFY_BRANCH={$local_branch}");
             }
             foreach ($sorted_environment_variables as $env) {
